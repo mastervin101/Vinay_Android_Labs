@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vinay\'s Android Labs</string>
+    <string name="Hello_World">Bonjour tous le monde</string>
+    <string name="Button">Voici le button</string>
+</resources>
