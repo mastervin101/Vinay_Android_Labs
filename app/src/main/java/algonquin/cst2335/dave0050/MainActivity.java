@@ -20,8 +20,18 @@ public class MainActivity extends AppCompatActivity {
 
         EditText myedit = findViewById(R.id.myedittext);
 
-        but.onclick(View v);
+        String editString = myedit.gettext().toString();
+
+
+        but.setOnClickListener(new View.OnClickListener() {
+
+            public void OnClick (View v) {
+            mytext.setText("Your edit text has:" + editString);
+
+            }
+        }
+
+
 
     }
-
 }

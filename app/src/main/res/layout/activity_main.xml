@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,9 +14,8 @@
         android:layout_height="wrap_content"
         android:text="@string/Hello_World"
         android:id="@+id/textview"
->
+        />
 
-    </TextView>
 
     <Button
         android:id="@+id/mybutton"
@@ -25,13 +25,39 @@
         android:text="@string/Button"
          />
 
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/CB"
+        android:text="Do you like coffee?"
+        />
+
+
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="I'm a Switch"
+        android:layout_marginBottom="50dp"
+        android:id="@+id/Switch" />
+
+
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="I'm a Radio"
+        android:id="@+id/radio"/>
+
+
+
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/myedittext"
         android:text ="@string/editmessage"
         android:hint = "@string/hinttext"
-        >
-    </EditText>
+        />
+
+
 
 </LinearLayout>
