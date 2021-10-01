@@ -2,5 +2,8 @@
 <resources>
     <string name="app_name">Vinay\'s Android Labs</string>
     <string name="Hello_World">Bonjour tous le monde</string>
-    <string name="Button">Voici le button</string>
+    <string name = "Button1"> Bouton 1 </string>
+    <string name = "Button2"> Bouton 2 </string>
+    <string name = "Button3"> Bouton 3 </string>
+    <string name="spin_message">Tourner la drapeau</string>
 </resources>
