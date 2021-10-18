@@ -25,4 +25,7 @@
         </activity>
     </application>
 
+
+    <activity android:name=".ChatRoom"> </activity>
+
 </manifest>
