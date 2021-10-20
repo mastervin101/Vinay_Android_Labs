@@ -27,7 +27,8 @@ import java.io.IOException;
 
 public class SecondActivity extends AppCompatActivity {
 
-    ImageView camera = findViewById(R.id.imageView);
+    ImageView camera;
+
 
     ActivityResultLauncher<Intent> cameraResult = registerForActivityResult(
 
@@ -38,6 +39,7 @@ public class SecondActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         Bitmap thumbnail = data.getParcelableExtra("data");
+                        camera = findViewById(R.id.imageView);
                         camera.setImageBitmap(thumbnail);
 
                         try {
@@ -65,10 +67,22 @@ public class SecondActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
 
+
         Intent fromPrevious = getIntent();
         String emailAddress = fromPrevious.getStringExtra("Email_Address");
 
         TextView TV = findViewById(R.id.EM);
+        camera = findViewById(R.id.imageView);
+
+        File file = new File(getFilesDir(), "Profile.png");
+
+        if(file.exists())
+        {
+            String filename = file.getAbsolutePath();
+            Bitmap image = BitmapFactory.decodeFile(filename);
+            camera.setImageBitmap(image);
+        }
+
 
         TV.setText("Welcome Home" + emailAddress);
 
