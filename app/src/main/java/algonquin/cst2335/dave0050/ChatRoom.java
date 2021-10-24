@@ -52,6 +52,24 @@ public class ChatRoom extends AppCompatActivity {
             edit.setText("");
 
             CA.notifyItemInserted(messages.size()-1);
+
+
+        });
+
+        receive.setOnClickListener(click -> {
+
+            Date timeNow = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("EEEE,dd-MMM-yyyy hh-mm-ss a", Locale.getDefault());
+
+            String currentDateandTime = sdf.format(timeNow);
+            messages.add(new ChatMessage(edit.getText().toString(), 2,
+                    currentDateandTime));
+
+            String test = edit.getText().toString();
+            edit.setText("");
+
+            CA.notifyItemInserted(messages.size()-1);
+
         });
 
         CA = new MyChatAdapter();
@@ -105,9 +123,8 @@ public class ChatRoom extends AppCompatActivity {
         public MyRowViews onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = getLayoutInflater();
             int layoutID;
-            if(viewType == 1) {
+            if(viewType == 1)
                 layoutID = R.layout.sent_message;
-            }
             else
                 layoutID = R.layout.receive_message;
 
