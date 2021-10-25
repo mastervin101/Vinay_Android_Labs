@@ -18,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,8 +97,17 @@ public class ChatRoom extends AppCompatActivity {
                 .setTitle("Question")
                 .setPositiveButton("Yes", (dialog, cl) -> {
 
+                    ChatMessage removedMessage = messages.get(position);
                     messages.remove(position);
                     CA.notifyItemRemoved(position);
+
+                    Snackbar.make(messageText,"You deleted message #" + position, Snackbar.LENGTH_LONG)
+                            .setAction("Undo", clk -> {
+
+                                messages.add(position,removedMessage);
+                                CA.notifyItemInserted(position);
+                            })
+                            .show();
                 })
 
                 .setNegativeButton("No", (dialog,cl) -> {})
