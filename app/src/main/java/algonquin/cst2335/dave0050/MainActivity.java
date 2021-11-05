@@ -10,9 +10,11 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
+
 
 /**
  * @author Vinay Dave
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         TV = findViewById(R.id.TV);
         ET = findViewById(R.id.Password);
@@ -132,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return false;
         }
+
 
 
     }
