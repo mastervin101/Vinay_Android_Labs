@@ -43,6 +43,8 @@ public class ChatRoom extends AppCompatActivity {
         Button receive = findViewById(R.id.button4);
 
 
+        MyOpenHelper opener = new MyOpenHelper();
+
         send.setOnClickListener( click-> {
 
             Date timeNow = new Date();
