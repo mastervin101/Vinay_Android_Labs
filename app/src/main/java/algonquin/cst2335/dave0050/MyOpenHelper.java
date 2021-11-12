@@ -27,7 +27,7 @@ public class MyOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(String.format("Create table %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT," +
-                "%s INTEGER, %s TEXT", table_name, col_id,col_message,col_send_receive,col_time_sent ));
+                "%s INTEGER, %s TEXT)", table_name, col_id,col_message,col_send_receive,col_time_sent ));
 
     }
 
