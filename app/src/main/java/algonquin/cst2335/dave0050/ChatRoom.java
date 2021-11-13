@@ -34,6 +34,7 @@ public class ChatRoom extends AppCompatActivity {
     MyChatAdapter CA;
     RecyclerView chatList;
     ArrayList <ChatMessage> messages = new ArrayList<ChatMessage>();
+    SQLiteDatabase db;
     @Override
     public void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +48,7 @@ public class ChatRoom extends AppCompatActivity {
 
 
         MyOpenHelper opener = new MyOpenHelper(this);
-        SQLiteDatabase db = opener.getWritableDatabase();
+        db = opener.getWritableDatabase();
 
         send.setOnClickListener( click-> {
 
@@ -147,9 +148,16 @@ public class ChatRoom extends AppCompatActivity {
                     messages.remove(position);
                     CA.notifyItemRemoved(position);
 
+                    db.delete(MyOpenHelper.table_name, "_id=?", new String[] {
+                            Long.toString((removedMessage.getID()))
+                    });
                     Snackbar.make(messageText,"You deleted message #" + position, Snackbar.LENGTH_LONG)
                             .setAction("Undo", clk -> {
 
+
+                                db.execSQL("Insert into " + MyOpenHelper.table_name +" values('" + removedMessage.getID() +
+                                        "','" + removedMessage.getMessage() + "','" + removedMessage.getSendorReceive() +
+                                        "','" + removedMessage.getTimesent() + "');");
                                 messages.add(position,removedMessage);
                                 CA.notifyItemInserted(position);
                             })
