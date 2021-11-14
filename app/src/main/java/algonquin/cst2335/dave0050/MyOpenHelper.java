@@ -26,14 +26,14 @@ public class MyOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(String.format("Create table %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT," +
+        db.execSQL(String.format("Create table if not exists %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT," +
                 "%s INTEGER, %s TEXT)", table_name, col_id,col_message,col_send_receive,col_time_sent ));
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("Drop table if Exists " + table_name);
+        db.execSQL("Drop table if exists " + table_name);
         onCreate(db);
 
     }

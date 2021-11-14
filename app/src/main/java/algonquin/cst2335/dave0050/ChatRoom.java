@@ -1,6 +1,7 @@
 package algonquin.cst2335.dave0050;
 
 import android.content.ContentValues;
+import android.database.CharArrayBuffer;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.icu.text.Transliterator;
@@ -34,6 +35,8 @@ public class ChatRoom extends AppCompatActivity {
     MyChatAdapter CA;
     RecyclerView chatList;
     ArrayList <ChatMessage> messages = new ArrayList<ChatMessage>();
+
+
     SQLiteDatabase db;
     @Override
     public void onCreate( Bundle savedInstanceState) {
