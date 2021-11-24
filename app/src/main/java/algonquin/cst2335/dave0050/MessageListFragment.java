@@ -32,6 +32,7 @@ public class MessageListFragment extends Fragment {
     RecyclerView chatList;
     ArrayList<ChatMessage> messages = new ArrayList<ChatMessage>();
     SQLiteDatabase db;
+    Button Send;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,7 +40,7 @@ public class MessageListFragment extends Fragment {
         View chatLayout = inflater.inflate(R.layout.chatlayout, container, false);
 
         chatList = chatLayout.findViewById(R.id.myrecycler);
-        Button Send = chatLayout.findViewById(R.id.button2);
+        Send = chatLayout.findViewById(R.id.button2);
         Button Receive = chatLayout.findViewById(R.id.button4);
         EditText ET = chatLayout.findViewById(R.id.editText);
 
@@ -125,7 +126,42 @@ public class MessageListFragment extends Fragment {
 
     }
 
-        private class MyRowViews extends RecyclerView.ViewHolder {
+    public void notifyMessageDeleted(ChatMessage chosenMessage, int chosenPosition) {
+
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
+                    builder.setMessage("Do you want to delete the message:" + chosenMessage.getMessage())
+                            .setTitle("Question")
+                            .setPositiveButton("Yes", (dialog, cl) -> {
+
+                                ChatMessage removedMessage = messages.get(chosenPosition);
+                                messages.remove(chosenPosition);
+                                CA.notifyItemRemoved(chosenPosition);
+
+                                db.delete(MyOpenHelper.table_name, "_id=?", new String[]{
+                                        Long.toString((removedMessage.getID()))
+                                });
+                                Snackbar.make(Send, "You deleted message #" + chosenPosition, Snackbar.LENGTH_LONG)
+                                        .setAction("Undo", clk -> {
+
+
+                                            db.execSQL("Insert into " + MyOpenHelper.table_name + " values('" + removedMessage.getID() +
+                                                    "','" + removedMessage.getMessage() + "','" + removedMessage.getSendorReceive() +
+                                                    "','" + removedMessage.getTimesent() + "');");
+                                            messages.add(chosenPosition, removedMessage);
+                                            CA.notifyItemInserted(chosenPosition);
+                                        })
+                                        .show();
+                            })
+
+                            .setNegativeButton("No", (dialog, cl) -> {
+                            })
+                            .create().show();
+
+
+    }
+
+    private class MyRowViews extends RecyclerView.ViewHolder {
 
             TextView messageText;
             TextView timeText;
@@ -134,36 +170,11 @@ public class MessageListFragment extends Fragment {
                 super(itemView);
 
                 itemView.setOnClickListener(click -> {
+                    ChatRoom parentActivity = (ChatRoom) getContext();
                     int position = getAbsoluteAdapterPosition();
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder((getContext()));
-                    builder.setMessage("Do you want to delete the message:" + messageText.getText())
-                            .setTitle("Question")
-                            .setPositiveButton("Yes", (dialog, cl) -> {
+                    parentActivity.userClickMessage(messages.get(position), position);
 
-                                ChatMessage removedMessage = messages.get(position);
-                                messages.remove(position);
-                                CA.notifyItemRemoved(position);
-
-                                db.delete(MyOpenHelper.table_name, "_id=?", new String[]{
-                                        Long.toString((removedMessage.getID()))
-                                });
-                                Snackbar.make(messageText, "You deleted message #" + position, Snackbar.LENGTH_LONG)
-                                        .setAction("Undo", clk -> {
-
-
-                                            db.execSQL("Insert into " + MyOpenHelper.table_name + " values('" + removedMessage.getID() +
-                                                    "','" + removedMessage.getMessage() + "','" + removedMessage.getSendorReceive() +
-                                                    "','" + removedMessage.getTimesent() + "');");
-                                            messages.add(position, removedMessage);
-                                            CA.notifyItemInserted(position);
-                                        })
-                                        .show();
-                            })
-
-                            .setNegativeButton("No", (dialog, cl) -> {
-                            })
-                            .create().show();
 
                 });
                 messageText = itemView.findViewById(R.id.message);
@@ -173,7 +184,7 @@ public class MessageListFragment extends Fragment {
             }
         }
 
-        private class ChatMessage {
+        public class ChatMessage {
 
             String message;
             int sendorReceive;
