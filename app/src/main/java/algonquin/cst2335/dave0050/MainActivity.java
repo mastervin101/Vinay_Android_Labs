@@ -7,6 +7,7 @@ import static java.lang.Character.isUpperCase;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -14,6 +15,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -25,9 +35,11 @@ public class MainActivity extends AppCompatActivity {
     /** This holds the text at the center of the screen*/
     private TextView TV =  null;
     /** This holds the password field that is below the text field */
-    private EditText ET = null;
+    private EditText cityText = null;
     /** This holds the login button at the bottome of the screen */
-    private Button btn = null;
+    private Button forecastbtn = null;
+
+    private String stringURl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +48,32 @@ public class MainActivity extends AppCompatActivity {
 
 
         TV = findViewById(R.id.TV);
-        ET = findViewById(R.id.Password);
-        btn = findViewById(R.id.Login);
+        cityText = findViewById(R.id.CityName);
+        forecastbtn = findViewById(R.id.Forecast);
 
-        btn.setOnClickListener(clk -> {
-            String read = ET.getText().toString();
+        forecastbtn.setOnClickListener(clk -> {
+
+            //setup it up in the way the professor showed us!
+            stringURl = "https://api.openweathermap.org/data/2.5/weather?q=TORONTO&appid=7e943c97096a9784391a981c4d878b22&Units=Metric";
+
+
+            Executor newThread = Executors.newSingleThreadExecutor();
+            newThread.execute(() -> {
+                        URL url = null;
+                        try {
+                            url = new URL(stringURl);
+
+                            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                        }
+                        catch (IOException e) {
+                            Log.e("Connection error:", e.getMessage());
+                            //e.printStackTrace();
+                        }
+                    }
+            );
+
+            String read = cityText.getText().toString();
 
             if(checkPasswordComplexity(read)) {
                 TV.setText("Your password meets the requirements");
