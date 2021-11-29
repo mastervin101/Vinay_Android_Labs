@@ -6,24 +6,40 @@ import static java.lang.Character.isUpperCase;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 
 /**
@@ -39,8 +55,9 @@ public class MainActivity extends AppCompatActivity {
     /** This holds the login button at the bottome of the screen */
     private Button forecastbtn = null;
 
-    private String stringURl;
+    String serverURL ="https://api.openweathermap.org/data/2.5/weather?q=%s&appid=7e943c97096a9784391a981c4d878b22&units=metric";
 
+    Bitmap image = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,20 +70,101 @@ public class MainActivity extends AppCompatActivity {
 
         forecastbtn.setOnClickListener(clk -> {
 
-            //setup it up in the way the professor showed us!
-            stringURl = "https://api.openweathermap.org/data/2.5/weather?q=TORONTO&appid=7e943c97096a9784391a981c4d878b22&Units=Metric";
+
+
 
 
             Executor newThread = Executors.newSingleThreadExecutor();
             newThread.execute(() -> {
                         URL url = null;
                         try {
-                            url = new URL(stringURl);
+                            String cityTextString = cityText.getText().toString();
+                            String fullURl = String.format(serverURL, URLEncoder.encode(cityTextString));
+                            url = new URL(fullURl);
 
                             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+
+                            String text = (new BufferedReader(
+                                    new InputStreamReader(in, StandardCharsets.UTF_8)))
+                                    .lines()
+                                    .collect(Collectors.joining("\n"));
+
+                            JSONObject theDocument = new JSONObject(text);
+                            JSONObject coord = theDocument.getJSONObject("coord");
+                            JSONArray weatherArray = theDocument.getJSONArray("weather");
+                            JSONObject position0 = weatherArray.getJSONObject(0);
+
+                            String description = position0.getString("description");
+                            String iconName = position0.getString("icon");
+
+                            //store weather icon image for later but check if it exists first
+
+                            File file = new File(getFilesDir(), iconName +".png");
+                            if(file.exists()) {
+                                image = BitmapFactory.decodeFile(getFilesDir() +"/"+iconName+ ".png");
+
+                            }
+
+                            else {
+                                URL imgURl = new URL("https://openweathermap.org/img/w/" + iconName + ".png");
+                                HttpURLConnection imgConnection = (HttpURLConnection) imgURl.openConnection();
+                                imgConnection.connect();
+
+                                int responseCode = imgConnection.getResponseCode();
+                                if (responseCode == 200) {
+                                    image = BitmapFactory.decodeStream(imgConnection.getInputStream());
+
+
+                                }
+                            }
+
+                            //save image for later
+                            FileOutputStream fOut = null;
+                            try {
+                                fOut = openFileOutput(iconName + ".png", Context.MODE_PRIVATE);
+                                image.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+                                fOut.flush();
+                                fOut.close();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+
+                            int visibility = theDocument.getInt("visibility");
+                            String CityName = theDocument.getString("name");
+
+
+                            JSONObject mainObject = theDocument.getJSONObject("main");
+
+                            Double currentTemp = mainObject.getDouble("temp");
+                            Double min = mainObject.getDouble("temp_min");
+                            Double max = mainObject.getDouble("temp_max");
+                            int humidity = mainObject.getInt("humidity");
+
+                            //set the values in TextView
+
+                            Bitmap finalImage = image;
+                            runOnUiThread(() -> {
+                                TextView TV = findViewById(R.id.temp);
+                                TV.setText("The current temperature is" + currentTemp);
+                                TV.setVisibility(View.VISIBLE);
+
+                                TV = findViewById(R.id.maxTemp);
+                                TV.setText("The max temperature is" + max);
+                                TV.setVisibility(View.VISIBLE);
+
+                                TV = findViewById(R.id.minTemp);
+                                TV.setText("The min temperature is" + min);
+                                TV.setVisibility(View.VISIBLE);
+
+                                ImageView iv = findViewById(R.id.iconWeather);
+                                iv.setImageBitmap(finalImage);
+                                iv.setVisibility(View.VISIBLE);
+
+
+                            });
                         }
-                        catch (IOException e) {
+                        catch (IOException | JSONException e) {
                             Log.e("Connection error:", e.getMessage());
                             //e.printStackTrace();
                         }
