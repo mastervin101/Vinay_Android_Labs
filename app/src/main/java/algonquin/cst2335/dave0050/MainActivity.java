@@ -4,6 +4,7 @@ import static java.lang.Character.isDigit;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import android.widget.Toast;
@@ -23,6 +25,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -55,9 +60,19 @@ public class MainActivity extends AppCompatActivity {
     /** This holds the login button at the bottome of the screen */
     private Button forecastbtn = null;
 
-    String serverURL ="https://api.openweathermap.org/data/2.5/weather?q=%s&appid=7e943c97096a9784391a981c4d878b22&units=metric";
+    String serverURL ="https://api.openweathermap.org/data/2.5/weather?q=%s&appid=7e943c97096a9784391a981c4d878b22&units=metric&mode=xml";
 
     Bitmap image = null;
+
+    //declare values to store weather API info outside of lambda functions
+    String currentTemp = null;
+    String minTemp = null;
+    String maxTemp = null;
+    String description = null;
+    String humidity = null;
+    String iconName = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +85,11 @@ public class MainActivity extends AppCompatActivity {
 
         forecastbtn.setOnClickListener(clk -> {
 
-
+            AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Getting your weather forecast")
+                    .setMessage("We're calling people in " + cityText.getText().toString() + " "+ "to look outside their windows")
+                    .setView(new ProgressBar(MainActivity.this))
+                    .show();
 
 
 
@@ -85,18 +104,45 @@ public class MainActivity extends AppCompatActivity {
                             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
-                            String text = (new BufferedReader(
-                                    new InputStreamReader(in, StandardCharsets.UTF_8)))
-                                    .lines()
-                                    .collect(Collectors.joining("\n"));
+                            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                            factory.setNamespaceAware(false);
+                            XmlPullParser app = factory.newPullParser();
+                            app.setInput(in,"UTF-8");
 
-                            JSONObject theDocument = new JSONObject(text);
-                            JSONObject coord = theDocument.getJSONObject("coord");
-                            JSONArray weatherArray = theDocument.getJSONArray("weather");
-                            JSONObject position0 = weatherArray.getJSONObject(0);
 
-                            String description = position0.getString("description");
-                            String iconName = position0.getString("icon");
+
+
+                            while(app.next() != XmlPullParser.END_DOCUMENT)
+                            {
+                                switch(app.getEventType())
+                                {
+                                    case XmlPullParser.START_TAG:
+                                        if(app.getName().equals("temperature"))
+                                        {
+                                            currentTemp = app.getAttributeValue(null,"value");
+                                            minTemp = app.getAttributeValue(null,"min");
+                                            maxTemp = app.getAttributeValue(null,"max");
+                                        }
+                                        else if(app.getName().equals("weather"))
+                                        {
+
+                                            description = app.getAttributeValue(null,"value");
+                                            iconName = app.getAttributeValue(null,"icon");
+
+                                        }
+                                        else if(app.getName().equals("humidity"))
+                                        {
+                                            humidity = app.getAttributeValue(null,"value");
+                                    }
+                                        break;
+
+                                    case XmlPullParser.END_TAG:
+                                        break;
+
+                                    case XmlPullParser.TEXT:
+                                        break;
+                                }
+                            }
 
                             //store weather icon image for later but check if it exists first
 
@@ -130,41 +176,36 @@ public class MainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
 
-                            int visibility = theDocument.getInt("visibility");
-                            String CityName = theDocument.getString("name");
 
-
-                            JSONObject mainObject = theDocument.getJSONObject("main");
-
-                            Double currentTemp = mainObject.getDouble("temp");
-                            Double min = mainObject.getDouble("temp_min");
-                            Double max = mainObject.getDouble("temp_max");
-                            int humidity = mainObject.getInt("humidity");
 
                             //set the values in TextView
 
                             Bitmap finalImage = image;
                             runOnUiThread(() -> {
                                 TextView TV = findViewById(R.id.temp);
-                                TV.setText("The current temperature is" + currentTemp);
+                                TV.setText("The current temperature is:" + " "+ currentTemp +" " +"degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 TV = findViewById(R.id.maxTemp);
-                                TV.setText("The max temperature is" + max);
+                                TV.setText("The max temperature is" +" "+maxTemp+" " +"degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 TV = findViewById(R.id.minTemp);
-                                TV.setText("The min temperature is" + min);
+                                TV.setText("The min temperature is" +" "+ minTemp+" " +"degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 ImageView iv = findViewById(R.id.iconWeather);
                                 iv.setImageBitmap(finalImage);
                                 iv.setVisibility(View.VISIBLE);
 
+                                TV.findViewById(R.id.humidity);
+                                TV.setText("The current humidity is" + " "+humidity+"%");
+                                TV.setVisibility(View.VISIBLE);
 
+                                dialog.hide();
                             });
                         }
-                        catch (IOException | JSONException e) {
+                        catch (IOException  | XmlPullParserException e) {
                             Log.e("Connection error:", e.getMessage());
                             //e.printStackTrace();
                         }
@@ -173,12 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
             String read = cityText.getText().toString();
 
-            if(checkPasswordComplexity(read)) {
-                TV.setText("Your password meets the requirements");
-            }
-            else {
-                TV.setText("You shall not pass!");
-            };
+
 
         });
 
