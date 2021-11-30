@@ -146,20 +146,24 @@ public class MainActivity extends AppCompatActivity {
                             Bitmap finalImage = image;
                             runOnUiThread(() -> {
                                 TextView TV = findViewById(R.id.temp);
-                                TV.setText("The current temperature is" + currentTemp);
+                                TV.setText("The current temperature is:" + " "+ currentTemp +" " +"degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 TV = findViewById(R.id.maxTemp);
-                                TV.setText("The max temperature is" + max);
+                                TV.setText("The max temperature is" +" "+max+" " +"degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 TV = findViewById(R.id.minTemp);
-                                TV.setText("The min temperature is" + min);
+                                TV.setText("The min temperature is" +" "+ min+" " +"degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 ImageView iv = findViewById(R.id.iconWeather);
                                 iv.setImageBitmap(finalImage);
                                 iv.setVisibility(View.VISIBLE);
+
+                                TV.findViewById(R.id.humidity);
+                                TV.setText("The current humidity is" + " "+humidity+"%");
+                                TV.setVisibility(View.VISIBLE);
 
 
                             });
@@ -171,14 +175,7 @@ public class MainActivity extends AppCompatActivity {
                     }
             );
 
-            String read = cityText.getText().toString();
 
-            if(checkPasswordComplexity(read)) {
-                TV.setText("Your password meets the requirements");
-            }
-            else {
-                TV.setText("You shall not pass!");
-            };
 
         });
 
