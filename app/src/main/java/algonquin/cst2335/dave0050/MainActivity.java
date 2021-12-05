@@ -4,6 +4,7 @@ import static java.lang.Character.isDigit;
 import static java.lang.Character.isLowerCase;
 import static java.lang.Character.isUpperCase;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     /** This holds the text at the center of the screen*/
     private TextView TV =  null;
     /** This holds the password field that is below the text field */
-    private EditText cityText = null;
+    EditText cityText = null;
     /** This holds the login button at the bottome of the screen */
     private Button forecastbtn = null;
 
@@ -71,6 +76,104 @@ public class MainActivity extends AppCompatActivity {
     String description = null;
     String humidity = null;
     String iconName = null;
+    float oldSize = 14;
+    Toolbar myToolbar;
+    String cityName = "";
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_actions,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        switch (item.getItemId()) {
+            case R.id.hide_views:
+                TextView TV = findViewById(R.id.temp);
+                TV.setVisibility(View.INVISIBLE);
+
+                TV = findViewById(R.id.maxTemp);
+                TV.setVisibility(View.INVISIBLE);
+
+                TV = findViewById(R.id.minTemp);
+                TV.setVisibility(View.INVISIBLE);
+
+                ImageView iv = findViewById(R.id.iconWeather);
+                iv.setVisibility(View.INVISIBLE);
+
+                TV = findViewById(R.id.humidity);
+                TV.setVisibility(View.INVISIBLE);
+
+                TV = findViewById(R.id.description);
+                TV.setVisibility(View.INVISIBLE);
+                cityText = findViewById(R.id.CityName);
+                cityText.setText("");
+
+                break;
+
+
+        case R.id.id_decrease:
+        oldSize = Float.max(oldSize-1,5);
+
+            TV = findViewById(R.id.temp);
+            TV.setTextSize(oldSize);
+
+            TV = findViewById(R.id.maxTemp);
+            TV.setTextSize(oldSize);
+
+            TV = findViewById(R.id.minTemp);
+            TV.setTextSize(oldSize);
+
+
+            TV = findViewById(R.id.humidity);
+            TV.setTextSize(oldSize);
+
+            TV = findViewById(R.id.description);
+            TV.setTextSize(oldSize);
+
+            cityText = findViewById(R.id.CityName);
+            cityText.setTextSize(oldSize);
+
+        break;
+
+        case R.id.id_increase:
+
+        oldSize++;
+            TV = findViewById(R.id.temp);
+            TV.setTextSize(oldSize);
+
+            TV = findViewById(R.id.maxTemp);
+            TV.setTextSize(oldSize);
+
+            TV = findViewById(R.id.minTemp);
+            TV.setTextSize(oldSize);
+
+
+            TV = findViewById(R.id.humidity);
+            TV.setTextSize(oldSize);
+
+            TV = findViewById(R.id.description);
+            TV.setTextSize(oldSize);
+
+            cityText = findViewById(R.id.CityName);
+            cityText.setTextSize(oldSize);
+
+
+
+            break;
+
+            case 5:
+                cityName = item.getTitle().toString();
+                runforecast(cityName);
+    }
+        return super.onOptionsItemSelected(item);
+    }
+
 
 
     @Override
@@ -83,21 +186,38 @@ public class MainActivity extends AppCompatActivity {
         cityText = findViewById(R.id.CityName);
         forecastbtn = findViewById(R.id.Forecast);
 
-        forecastbtn.setOnClickListener(clk -> {
+        myToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
 
+
+        forecastbtn.setOnClickListener(clk -> {
+            cityName = cityText.getText().toString();
+            myToolbar.getMenu().add(0, 5, 0, cityName).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+            runforecast(cityName);
+
+            });
+
+            String read = cityText.getText().toString();
+
+
+        };
+
+
+
+
+        public void runforecast(String city) {
             AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
                     .setTitle("Getting your weather forecast")
-                    .setMessage("We're calling people in " + cityText.getText().toString() + " "+ "to look outside their windows")
+                    .setMessage("We're calling people in " + city + " " + "to look outside their windows")
                     .setView(new ProgressBar(MainActivity.this))
                     .show();
-
 
 
             Executor newThread = Executors.newSingleThreadExecutor();
             newThread.execute(() -> {
                         URL url = null;
                         try {
-                            String cityTextString = cityText.getText().toString();
+                            String cityTextString = city;
                             String fullURl = String.format(serverURL, URLEncoder.encode(cityTextString));
                             url = new URL(fullURl);
 
@@ -107,33 +227,24 @@ public class MainActivity extends AppCompatActivity {
                             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
                             factory.setNamespaceAware(false);
                             XmlPullParser app = factory.newPullParser();
-                            app.setInput(in,"UTF-8");
+                            app.setInput(in, "UTF-8");
 
 
-
-
-                            while(app.next() != XmlPullParser.END_DOCUMENT)
-                            {
-                                switch(app.getEventType())
-                                {
+                            while (app.next() != XmlPullParser.END_DOCUMENT) {
+                                switch (app.getEventType()) {
                                     case XmlPullParser.START_TAG:
-                                        if(app.getName().equals("temperature"))
-                                        {
-                                            currentTemp = app.getAttributeValue(null,"value");
-                                            minTemp = app.getAttributeValue(null,"min");
-                                            maxTemp = app.getAttributeValue(null,"max");
-                                        }
-                                        else if(app.getName().equals("weather"))
-                                        {
+                                        if (app.getName().equals("temperature")) {
+                                            currentTemp = app.getAttributeValue(null, "value");
+                                            minTemp = app.getAttributeValue(null, "min");
+                                            maxTemp = app.getAttributeValue(null, "max");
+                                        } else if (app.getName().equals("weather")) {
 
-                                            description = app.getAttributeValue(null,"value");
-                                            iconName = app.getAttributeValue(null,"icon");
+                                            description = app.getAttributeValue(null, "value");
+                                            iconName = app.getAttributeValue(null, "icon");
 
+                                        } else if (app.getName().equals("humidity")) {
+                                            humidity = app.getAttributeValue(null, "value");
                                         }
-                                        else if(app.getName().equals("humidity"))
-                                        {
-                                            humidity = app.getAttributeValue(null,"value");
-                                    }
                                         break;
 
                                     case XmlPullParser.END_TAG:
@@ -146,13 +257,11 @@ public class MainActivity extends AppCompatActivity {
 
                             //store weather icon image for later but check if it exists first
 
-                            File file = new File(getFilesDir(), iconName +".png");
-                            if(file.exists()) {
-                                image = BitmapFactory.decodeFile(getFilesDir() +"/"+iconName+ ".png");
+                            File file = new File(getFilesDir(), iconName + ".png");
+                            if (file.exists()) {
+                                image = BitmapFactory.decodeFile(getFilesDir() + "/" + iconName + ".png");
 
-                            }
-
-                            else {
+                            } else {
                                 URL imgURl = new URL("https://openweathermap.org/img/w/" + iconName + ".png");
                                 HttpURLConnection imgConnection = (HttpURLConnection) imgURl.openConnection();
                                 imgConnection.connect();
@@ -177,48 +286,45 @@ public class MainActivity extends AppCompatActivity {
                             }
 
 
-
                             //set the values in TextView
 
                             Bitmap finalImage = image;
                             runOnUiThread(() -> {
                                 TextView TV = findViewById(R.id.temp);
-                                TV.setText("The current temperature is:" + " "+ currentTemp +" " +"degrees Celsius");
+                                TV.setText("The current temperature is:" + " " + currentTemp + " " + "degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 TV = findViewById(R.id.maxTemp);
-                                TV.setText("The max temperature is" +" "+maxTemp+" " +"degrees Celsius");
+                                TV.setText("The max temperature is" + " " + maxTemp + " " + "degrees Celsius");
                                 TV.setVisibility(View.VISIBLE);
 
                                 TV = findViewById(R.id.minTemp);
-                                TV.setText("The min temperature is" +" "+ minTemp+" " +"degrees Celsius");
+                                TV.setText("The min temperature is" + " " + minTemp + " " + "degrees Celsius");
+                                TV.setVisibility(View.VISIBLE);
+
+                                TV = findViewById(R.id.description);
+                                TV.setText("Conditions:" + " " + description);
                                 TV.setVisibility(View.VISIBLE);
 
                                 ImageView iv = findViewById(R.id.iconWeather);
                                 iv.setImageBitmap(finalImage);
                                 iv.setVisibility(View.VISIBLE);
 
-                                TV.findViewById(R.id.humidity);
-                                TV.setText("The current humidity is" + " "+humidity+"%");
+                                TV = findViewById(R.id.humidity);
+                                TV.setText("The current humidity is" + " " + humidity + "%");
                                 TV.setVisibility(View.VISIBLE);
 
                                 dialog.hide();
                             });
-                        }
-                        catch (IOException  | XmlPullParserException e) {
+                        } catch (IOException | XmlPullParserException e) {
                             Log.e("Connection error:", e.getMessage());
                             //e.printStackTrace();
                         }
                     }
             );
-
-            String read = cityText.getText().toString();
-
+    };
 
 
-        });
-
-    }
 
     /**
      *

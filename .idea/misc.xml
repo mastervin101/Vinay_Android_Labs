@@ -14,6 +14,7 @@
         <entry key="app/src/main/res/layout/empty_layout.xml" value="0.11851851851851852" />
         <entry key="app/src/main/res/layout/receive_message.xml" value="0.67" />
         <entry key="app/src/main/res/layout/sent_message.xml" value="0.33" />
+        <entry key="app/src/main/res/menu/main_activity_actions.xml" value="0.31614583333333335" />
       </map>
     </option>
   </component>
