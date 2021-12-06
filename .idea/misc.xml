@@ -12,6 +12,7 @@
         <entry key="app/src/main/res/layout/chatlayout.xml" value="0.22" />
         <entry key="app/src/main/res/layout/details_layout.xml" value="0.33" />
         <entry key="app/src/main/res/layout/empty_layout.xml" value="0.11851851851851852" />
+        <entry key="app/src/main/res/layout/popout_header.xml" value="0.22554347826086957" />
         <entry key="app/src/main/res/layout/receive_message.xml" value="0.67" />
         <entry key="app/src/main/res/layout/sent_message.xml" value="0.33" />
         <entry key="app/src/main/res/menu/main_activity_actions.xml" value="0.31614583333333335" />
